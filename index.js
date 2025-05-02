@@ -1,10 +1,11 @@
-// Node.js v20 対応：服装ごとに指定枚数生成対応版（index.js）
+// Node.js v20 対応：画像をjpgに変換して日付フォルダに保存（index.js）
 import fs from "fs/promises";
 import path from "path";
 import axios from "axios";
 import dayjs from "dayjs";
 import pLimit from "p-limit";
 import { fileURLToPath } from 'url';
+import sharp from "sharp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const mode = process.argv[2] === 'prod' ? 'prod' : 'dev';
@@ -23,8 +24,8 @@ function expandPrompt(prompt) {
   });
 }
 
-const generateImage = async (i, clothingPrompt, env, setting, prompts, payloadConfig, adetailerDefaults) => {
-  console.log(`${i}枚目の画像を生成中（服装: ${clothingPrompt}）...`);
+const generateImage = async (index, env, setting, prompts, clothingPrompt, payloadConfig, adetailerDefaults) => {
+  console.log(`${index}枚目の画像を生成中...`);
   try {
     const hair = expandPrompt(prompts.HairPrompt);
     const face = expandPrompt(prompts.FaceExpressionPrompt);
@@ -36,11 +37,16 @@ const generateImage = async (i, clothingPrompt, env, setting, prompts, payloadCo
     const fullPrompt = [basePrompt, face, hair, pose, person, clothingPrompt].join(", \n\n");
     const personName = person.match(/<lora:(.*?):/)[1];
     const timestamp = dayjs().format("YYYYMMDD-HHmmss");
-    const dir = path.join(env.output_dir, personName);
-    const filename = path.join(dir, `${timestamp}-${i}.png`);
+    const dayFolder = dayjs().format("YYYYMMDD");
+
+    const tmpDir = path.join(env.output_dir, personName);
+    const jpgDir = path.join(env.output_dir, dayFolder);
+    const tmpFilename = path.join(tmpDir, `${timestamp}-${index}.png`);
+    const jpgFilename = path.join(jpgDir, `${personName}-${timestamp}-${index}.jpg`);
     const adetailerPrompt = `${face}, ${person}`;
 
-    await fs.mkdir(dir, { recursive: true });
+    await fs.mkdir(tmpDir, { recursive: true });
+    await fs.mkdir(jpgDir, { recursive: true });
 
     const payload = {
       ...payloadConfig,
@@ -63,11 +69,15 @@ const generateImage = async (i, clothingPrompt, env, setting, prompts, payloadCo
     const res = await axios.post(env.api_url, payload);
     const imageBase64 = res.data.images[0];
     const buffer = Buffer.from(imageBase64, 'base64');
-    await fs.writeFile(filename, buffer);
-    console.log(`✅ ${i}枚目の画像を生成しました: ${filename}`);
+    await fs.writeFile(tmpFilename, buffer);
+
+    // JPEG変換と保存
+    await sharp(buffer).jpeg({ quality: 90 }).toFile(jpgFilename);
+
+    console.log(`✅ ${index}枚目: 保存 -> ${tmpFilename}（png） / ${jpgFilename}（jpg）`);
 
   } catch (err) {
-    console.error(`❌ Error generating image ${i + 1}:`, err.message);
+    console.error(`❌ Error generating image ${index + 1}:`, err.message);
   }
 };
 
@@ -75,16 +85,18 @@ const main = async () => {
   const env = await readJSON(configPath("env"));
   const setting = await readJSON(configPath("setting"));
   const prompts = await readJSON(configPath("prompts"));
+  const clothingList = await readJSON(configPath("clothingPrompt"));
   const payloadConfig = await readJSON(configPath("payload"));
   const adetailerDefaults = await readJSON(configPath("adetailer"));
-  const clothingList = await readJSON(configPath("clothingPrompt"));
 
   const limit = pLimit(setting.concurrency);
   const tasks = [];
+  let globalIndex = 0;
 
   for (const clothingPrompt of clothingList) {
     for (let i = 0; i < setting.total_images; i++) {
-      tasks.push(limit(() => generateImage(i, clothingPrompt, env, setting, prompts, payloadConfig, adetailerDefaults)));
+      const currentIndex = globalIndex++;
+      tasks.push(limit(() => generateImage(currentIndex, env, setting, prompts, clothingPrompt, payloadConfig, adetailerDefaults)));
     }
   }
 
