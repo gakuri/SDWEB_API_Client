@@ -1,0 +1,9 @@
+{
+      "steps": 20,
+      "sampler_name": "Euler a",
+      "scheduler": "Automatic",
+      "cfg_scale": 7,
+      "seed": -1,
+      "width": 1024,
+      "height": 1024
+}
