@@ -43,7 +43,7 @@ const generateImage = async (index, env, setting, prompts, clothingPrompt, paylo
     const jpgDir = path.join(env.output_dir, dayFolder);
     const tmpFilename = path.join(tmpDir, `${timestamp}-${index}.png`);
     const jpgFilename = path.join(jpgDir, `${personName}-${timestamp}-${index}.jpg`);
-    const adetailerPrompt = `${face}, ${person}`;
+    const adetailerPrompt = `${basePrompt}, ${face}, ${person}`;
 
     await fs.mkdir(tmpDir, { recursive: true });
     await fs.mkdir(jpgDir, { recursive: true });
