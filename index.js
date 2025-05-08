@@ -24,7 +24,7 @@ function expandPrompt(prompt) {
   });
 }
 
-const generateImage = async (index, env, setting, prompts, clothingPrompt, payloadConfig, adetailerDefaults) => {
+const generateImage = async (index, clothingName, env, setting, prompts, clothingPrompt, payloadConfig, adetailerDefaults) => {
   console.log(`${index}枚目の画像を生成中...`);
   try {
     const hair = expandPrompt(prompts.HairPrompt);
@@ -41,8 +41,8 @@ const generateImage = async (index, env, setting, prompts, clothingPrompt, paylo
 
     const tmpDir = path.join(env.output_dir, personName);
     const jpgDir = path.join(env.output_dir, dayFolder);
-    const tmpFilename = path.join(tmpDir, `${timestamp}-${index}.png`);
-    const jpgFilename = path.join(jpgDir, `${personName}-${timestamp}-${index}.jpg`);
+    const tmpFilename = path.join(tmpDir, `${timestamp}-${clothingName}-${index}.png`);
+    const jpgFilename = path.join(jpgDir, `${personName}-${timestamp}-${clothingName}-${index}.jpg`);
     const adetailerPrompt = `${basePrompt}, ${face}, ${person}`;
 
     await fs.mkdir(tmpDir, { recursive: true });
@@ -93,10 +93,10 @@ const main = async () => {
   const tasks = [];
   let globalIndex = 0;
 
-  for (const clothingPrompt of clothingList) {
+  for (const [clothingName, clothingPrompt] of Object.entries(clothingList)) {
     for (let i = 0; i < setting.total_images; i++) {
       const currentIndex = globalIndex++;
-      tasks.push(limit(() => generateImage(currentIndex, env, setting, prompts, clothingPrompt, payloadConfig, adetailerDefaults)));
+      tasks.push(limit(() => generateImage(currentIndex, clothingName, env, setting, prompts, clothingPrompt, payloadConfig, adetailerDefaults)));
     }
   }
 

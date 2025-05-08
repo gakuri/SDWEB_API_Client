@@ -1,5 +1,4 @@
-[
-    "one piece dress"
-    , "suits"
-]
-  
+{
+    "onepiece" : "one piece dress", 
+    "suits" : "suits, office, window"
+} 
