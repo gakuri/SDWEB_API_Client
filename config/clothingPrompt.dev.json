@@ -1,4 +1,10 @@
 {
-    "onepiece" : "one piece dress", 
-    "suits" : "suits, office, window"
+    "onepiece" :{
+        "prompt": "one piece dress", 
+        "poses" : ["sitting","moveing"]
+    },
+    "suits" :{
+        "prompt": "suits, office, window",
+        "poses" : ["sitting","standing"]
+    }
 } 

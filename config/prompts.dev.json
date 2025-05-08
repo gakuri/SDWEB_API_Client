@@ -1,9 +1,13 @@
 {
-    "HairPrompt":"{ponytail|straight hair}",
-    "FaceExpressionPrompt":"{smile|expressionless}",
-    "PosePrompt"    :"{peace sign|thumbs up}",
-    "BasePrompt":"PonyScores7,score_9,score_8_up,score_7_up,hi res,masterpiece,best quality,detailed,amazing quality,best quality,highres,1girl,solo, solo focus,realistic, detailed face, detailed skin, cowboy shot, BREAK, looking at viewer",
-    "NegativePrompt":"PonyScoresNeg,score_3,score_2,score_1",
-    "PersonPrompt" :"beautiful girl",
-    "ClothingPrompt":"one piece dress"
+    "HairPrompt": "{ponytail|straight hair}",
+    "FaceExpressionPrompt": "{smile|expressionless}",
+    "PosePromptVariants": {
+        "sitting": "{sitting|kneeling}",
+        "moving": "{jumping|floating}",
+        "standing": "{standing|walking}"
+    },
+    "BasePrompt": "PonyScores7,score_9,score_8_up,score_7_up,hi res,masterpiece,best quality,detailed,amazing quality,best quality,highres,1girl,solo, solo focus,realistic, detailed face, detailed skin, cowboy shot, BREAK, looking at viewer",
+    "NegativePrompt": "PonyScoresNeg,score_3,score_2,score_1",
+    "PersonPrompt": "beautiful girl",
+    "ClothingPrompt": "one piece dress"
 }
